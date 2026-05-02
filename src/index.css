@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --safe-top: 0px;
+  --bg: #faf8f5;
+  --surface: #ffffff;
+  --text: #1c1510;
+  --dim: #6b5e50;
+  --border: #e5ddd3;
+  --accent: #8b5e2f;
+  --accent-light: #c49a5c;
+  --accent-hover: #7a4f25;
+  --navy: #1a2744;
+  --radius: 12px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  color: var(--text);
+  background: var(--navy);
+  margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+::selection {
+  background: var(--accent-light);
+  color: white;
+}
+
+@supports (padding-top: env(safe-area-inset-top)) {
+  :root {
+    --safe-top: env(safe-area-inset-top, 0px);
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --safe-top: max(env(safe-area-inset-top, 0px), 44px);
+  }
+}

@@ -1,28 +1,26 @@
 {
-  "name": "hatch-space-wonde-doors",
+  "name": "wonde-doors",
   "private": true,
+  "version": "1.0.0",
   "type": "module",
-  "packageManager": "bun@1.3.10",
   "scripts": {
-    "build": "bun build ./index.html --outdir dist",
-    "dev": "bun ./index.html",
-    "typecheck": "bun x tsc --noEmit -p tsconfig.json"
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@hatch/sdk": "file:/home/hatch/skills/spaces/js/runtime/vendor/hatch-sdk.tgz",
-    "lucide-react": "catalog:",
-    "react": "catalog:",
-    "react-dom": "catalog:",
-    "recharts": "catalog:",
-    "scheduler": "catalog:"
+    "lucide-react": "^0.460.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@types/node": "catalog:",
-    "@types/react": "catalog:",
-    "@types/react-dom": "catalog:",
-    "bun-plugin-tailwind": "catalog:",
-    "playwright": "catalog:",
-    "tailwindcss": "catalog:",
-    "typescript": "catalog:"
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.3"
   }
 }

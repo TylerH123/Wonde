@@ -1,10 +1,15 @@
-import { useState, useEffect, type FormEvent } from "react";
-import { SpaceRoot } from "@hatch/sdk/components";
+import { useState, useEffect, useCallback, type FormEvent } from "react";
 import {
   Menu, X, Phone, Mail, MapPin, Clock, ChevronRight,
   DoorOpen, DoorClosed, ArrowUpRight, Fence, ShowerHead, Wrench, Star,
-  Facebook, Hammer, Camera
+  Facebook, Hammer
 } from "lucide-react";
+
+const gallery1 = "/photos/gallery-1.jpg";
+const gallery2 = "/photos/gallery-2.jpg";
+const gallery3 = "/photos/gallery-3.jpg";
+const gallery4 = "/photos/gallery-4.jpg";
+const gallery5 = "/photos/gallery-5.jpg";
 
 const PHONE = "(516) 530-1601";
 const EMAIL = "wondedoorsandstairs@gmail.com";
@@ -31,14 +36,11 @@ const SERVICES = [
 ];
 
 const GALLERY_ITEMS = [
-  { title: "Modern Entry Door", category: "Exterior Doors" },
-  { title: "Oak Staircase Install", category: "Staircases" },
-  { title: "Frameless Shower", category: "Shower Doors" },
-  { title: "Custom Iron Railing", category: "Railings" },
-  { title: "French Door Set", category: "Interior Doors" },
-  { title: "Grand Stairway", category: "Staircases" },
-  { title: "Barn Door Install", category: "Interior Doors" },
-  { title: "Glass Balustrade", category: "Railings" },
+  { title: "Entry Door", category: "Exterior Doors", src: gallery1 },
+  { title: "Iron Double Door", category: "Exterior Doors", src: gallery2 },
+  { title: "Shower Enclosure", category: "Shower Doors", src: gallery3 },
+  { title: "Spiral Staircase", category: "Staircases", src: gallery4 },
+  { title: "Custom Staircase", category: "Staircases", src: gallery5 },
 ];
 
 const TESTIMONIALS = [
@@ -53,18 +55,33 @@ function Navbar() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
+    const hero = document.getElementById("home");
+    if (!hero) return;
+
+    const obs = new IntersectionObserver(
+      ([entry]) => setScrolled(!entry.isIntersecting),
+      { threshold: 0, rootMargin: "-80px 0px 0px 0px" }
+    );
+    obs.observe(hero);
+
     const handler = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handler, { passive: true });
-    return () => window.removeEventListener("scroll", handler);
+
+    return () => {
+      obs.disconnect();
+      window.removeEventListener("scroll", handler);
+    };
   }, []);
 
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "py-2.5" : "py-4"}`}
       style={{
-        background: scrolled ? "rgba(250,248,245,0.95)" : "transparent",
+        paddingTop: `calc(var(--safe-top, 0px) + ${scrolled ? "0.625rem" : "1rem"})`,
+        background: scrolled ? "rgba(250,248,245,0.97)" : "var(--navy)",
         backdropFilter: scrolled ? "blur(12px)" : "none",
         borderBottom: scrolled ? "1px solid var(--border)" : "none",
+        boxShadow: scrolled ? "0 1px 8px rgba(0,0,0,0.06)" : "none",
       }}
     >
       <div className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between">
@@ -123,15 +140,13 @@ function Navbar() {
 /* ─── Hero ─── */
 function Hero() {
   return (
-    <section id="home" className="relative min-h-[85vh] flex items-center overflow-hidden">
+    <section id="home" className="relative min-h-[85vh] flex items-center overflow-hidden" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
       <div className="absolute inset-0" style={{
         background: "linear-gradient(160deg, #1a2744 0%, #243352 50%, #2c3d5e 100%)",
       }} />
-      {/* Subtle wood-grain texture overlay */}
       <div className="absolute inset-0 opacity-5" style={{
         backgroundImage: "repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)",
       }} />
-      {/* Soft glow */}
       <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] rounded-full" style={{ background: "radial-gradient(circle, rgba(139,94,47,0.12) 0%, transparent 70%)" }} />
 
       <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 py-32 sm:py-40 w-full">
@@ -234,7 +249,6 @@ function About() {
     <section id="about" className="py-20 sm:py-28" style={{ background: "var(--surface)" }}>
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          {/* Image placeholder */}
           <div className="rounded-2xl overflow-hidden aspect-[4/3]" style={{
             background: "linear-gradient(135deg, #e8dfd4 0%, #d4c5b0 100%)",
             border: "1px solid var(--border)",
@@ -280,6 +294,25 @@ function About() {
 
 /* ─── Gallery ─── */
 function Gallery() {
+  const [lightbox, setLightbox] = useState<number | null>(null);
+
+  const closeLightbox = useCallback(() => setLightbox(null), []);
+
+  useEffect(() => {
+    if (lightbox === null) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowRight") setLightbox(prev => prev !== null ? (prev + 1) % GALLERY_ITEMS.length : null);
+      if (e.key === "ArrowLeft") setLightbox(prev => prev !== null ? (prev - 1 + GALLERY_ITEMS.length) % GALLERY_ITEMS.length : null);
+    };
+    window.addEventListener("keydown", handler);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handler);
+      document.body.style.overflow = "";
+    };
+  }, [lightbox, closeLightbox]);
+
   return (
     <section id="gallery" className="py-20 sm:py-28" style={{ background: "var(--bg)" }}>
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
@@ -291,22 +324,25 @@ function Gallery() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {GALLERY_ITEMS.map((item, i) => (
             <div
               key={i}
-              className="group rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1"
+              className={`group rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 ${i === 0 ? "col-span-2 md:col-span-1" : ""}`}
               style={{ border: "1px solid var(--border)" }}
+              onClick={() => setLightbox(i)}
             >
-              <div
-                className="aspect-square flex flex-col items-center justify-center gap-2 relative"
-                style={{ background: i % 2 === 0 ? "linear-gradient(135deg, #e8dfd4 0%, #ddd2c3 100%)" : "linear-gradient(135deg, #d4c5b0 0%, #c8b99f 100%)" }}
-              >
-                <Camera size={28} style={{ color: "var(--accent)", opacity: 0.35 }} />
-                <span className="text-xs font-medium" style={{ color: "var(--dim)", opacity: 0.5 }}>Photo Coming Soon</span>
-                {/* Overlay on hover */}
-                <div className="absolute inset-0 flex flex-col items-center justify-end p-4 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300"
-                  style={{ background: "linear-gradient(to top, rgba(26,39,68,0.85) 0%, transparent 60%)" }}>
+              <div className="aspect-[4/3] relative overflow-hidden">
+                <img
+                  src={item.src}
+                  alt={item.title}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
+                <div
+                  className="absolute inset-0 flex flex-col items-center justify-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{ background: "linear-gradient(to top, rgba(26,39,68,0.85) 0%, transparent 60%)" }}
+                >
                   <span className="text-sm font-semibold text-white">{item.title}</span>
                   <span className="text-xs text-white/70">{item.category}</span>
                 </div>
@@ -315,6 +351,51 @@ function Gallery() {
           ))}
         </div>
       </div>
+
+      {lightbox !== null && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center"
+          style={{ background: "rgba(0,0,0,0.92)" }}
+          onClick={closeLightbox}
+        >
+          <button
+            onClick={closeLightbox}
+            className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center text-white/80 hover:text-white transition-colors"
+            style={{ background: "rgba(255,255,255,0.1)" }}
+          >
+            <X size={22} />
+          </button>
+
+          <button
+            onClick={(e) => { e.stopPropagation(); setLightbox((lightbox - 1 + GALLERY_ITEMS.length) % GALLERY_ITEMS.length); }}
+            className="absolute left-3 sm:left-6 w-10 h-10 rounded-full flex items-center justify-center text-white/80 hover:text-white transition-colors"
+            style={{ background: "rgba(255,255,255,0.1)" }}
+          >
+            <ChevronRight size={22} className="rotate-180" />
+          </button>
+
+          <div className="max-w-[90vw] max-h-[85vh] flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={GALLERY_ITEMS[lightbox].src}
+              alt={GALLERY_ITEMS[lightbox].title}
+              className="max-w-full max-h-[78vh] object-contain rounded-lg"
+            />
+            <div className="mt-4 text-center">
+              <span className="text-white font-semibold text-base">{GALLERY_ITEMS[lightbox].title}</span>
+              <span className="text-white/50 text-sm ml-2">{GALLERY_ITEMS[lightbox].category}</span>
+              <span className="text-white/30 text-sm ml-3">{lightbox + 1} / {GALLERY_ITEMS.length}</span>
+            </div>
+          </div>
+
+          <button
+            onClick={(e) => { e.stopPropagation(); setLightbox((lightbox + 1) % GALLERY_ITEMS.length); }}
+            className="absolute right-3 sm:right-6 w-10 h-10 rounded-full flex items-center justify-center text-white/80 hover:text-white transition-colors"
+            style={{ background: "rgba(255,255,255,0.1)" }}
+          >
+            <ChevronRight size={22} />
+          </button>
+        </div>
+      )}
     </section>
   );
 }
@@ -388,7 +469,6 @@ function Contact() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          {/* Form */}
           <div className="lg:col-span-3 rounded-2xl p-6 sm:p-8" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -397,7 +477,7 @@ function Contact() {
                   <input
                     type="text" required placeholder="John Smith"
                     className="w-full px-4 py-3 rounded-lg text-base outline-none transition-all focus:ring-2"
-                    style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)", focusRingColor: "var(--accent)" } as React.CSSProperties}
+                    style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }}
                   />
                 </div>
                 <div>
@@ -452,9 +532,7 @@ function Contact() {
             </form>
           </div>
 
-          {/* Info panel */}
           <div className="lg:col-span-2 flex flex-col gap-6">
-            {/* Contact info card */}
             <div className="rounded-2xl p-6" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
               <h3 className="text-lg font-bold mb-5" style={{ color: "var(--navy)" }}>Contact Info</h3>
               <div className="space-y-4">
@@ -497,7 +575,6 @@ function Contact() {
               </div>
             </div>
 
-            {/* Map */}
             <div className="rounded-2xl overflow-hidden flex-1 min-h-[200px]" style={{ border: "1px solid var(--border)" }}>
               <iframe
                 title="Wonde Doors & Stairs Location"
@@ -522,7 +599,6 @@ function Footer() {
     <footer className="py-12" style={{ background: "var(--navy)", color: "rgba(255,255,255,0.7)" }}>
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-10">
-          {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-2.5 mb-4">
               <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: "var(--accent)" }}>
@@ -539,7 +615,6 @@ function Footer() {
             </p>
           </div>
 
-          {/* Quick Links */}
           <div>
             <h4 className="text-sm font-semibold text-white tracking-widest uppercase mb-4">Quick Links</h4>
             <div className="flex flex-col gap-2.5">
@@ -549,7 +624,6 @@ function Footer() {
             </div>
           </div>
 
-          {/* Services */}
           <div>
             <h4 className="text-sm font-semibold text-white tracking-widest uppercase mb-4">Services</h4>
             <div className="flex flex-col gap-2.5">
@@ -559,7 +633,6 @@ function Footer() {
             </div>
           </div>
 
-          {/* Contact */}
           <div>
             <h4 className="text-sm font-semibold text-white tracking-widest uppercase mb-4">Contact</h4>
             <div className="flex flex-col gap-3">
@@ -593,7 +666,7 @@ function Footer() {
 /* ─── App ─── */
 export default function App() {
   return (
-    <SpaceRoot>
+    <>
       <Navbar />
       <Hero />
       <Services />
@@ -602,6 +675,6 @@ export default function App() {
       <Testimonials />
       <Contact />
       <Footer />
-    </SpaceRoot>
+    </>
   );
 }
