@@ -1,0 +1,10 @@
+{
+  "entry": "src/App.tsx",
+  "name": "Wonde Doors",
+  "slug": "wonde-doors",
+  "verification": {
+    "criticalActions": [],
+    "enforceBeforePublish": true,
+    "playwrightMode": "hybrid"
+  }
+}

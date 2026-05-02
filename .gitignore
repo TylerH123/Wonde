@@ -1,0 +1,8 @@
+node_modules/
+.space-build/
+app.db
+verify/
+pyrefly.toml
+*.pyc
+__pycache__/
+dist/
